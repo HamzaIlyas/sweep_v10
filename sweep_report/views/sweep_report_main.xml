@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <report id="report_sweep_xlsx"
+                model="account.move"
+                string="SweepReport"
+                report_type="xlsx"
+                name="sweep_report.report_sweep_report.xlsx"
+                file="sweep_report.report_sweep_report.xlsx"
+                attachment_use="False"/>
+    </data>
+</odoo>

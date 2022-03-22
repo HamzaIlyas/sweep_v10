@@ -39,7 +39,7 @@
         id="menu_open_view_sweep_report_wizard"
         name="Sweep Report"
         action="sweep_report_wizard_action"
-        parent="account.menu_account_reports"
+        parent="account.account_reports_business_intelligence_menu"
         sequence="1"/>
 
 </odoo>

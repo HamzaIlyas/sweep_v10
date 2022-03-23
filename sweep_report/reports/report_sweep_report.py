@@ -12,18 +12,32 @@ from odoo.addons.report_xlsx.report.report_xlsx import ReportXlsx
 class SweepReportXls(ReportXlsx):
 
     def generate_xlsx_report(self, workbook, data, lines):
-        q = """SELECT *,
-                AAA.NAME ANALYTIC_ACCOUNT,
-                AM.NAME JOURNAL_ENTRY_NUMBER,
-                DATE(AM.CREATE_DATE) SWEPT_DATE,
-                AM.REF SWEEP_ITEM_JOURNAL_ENTRY_NUMBER,
-                AML.NAME SWEPT_ITEMS
-            FROM ACCOUNT_MOVE AM
-            INNER JOIN ACCOUNT_MOVE_LINE AML ON AM.ID = AML.MOVE_ID
-            LEFT OUTER JOIN ACCOUNT_ANALYTIC_ACCOUNT AAA ON AAA.ID = AML.ANALYTIC_ACCOUNT_ID
-            WHERE AM.IS_A_SWEEP_JE = TRUE
-                AND AM.DATE BETWEEN '{0}' AND '{1}'
-            ORDER BY 1; """.format(
+        q = """SELECT AM.DATE,
+                                AML.SWEPT,
+                                AAA.NAME ANALYTIC_ACCOUNT,
+                                AM.NAME JOURNAL_ENTRY_NUMBER,
+                                DATE(AM.CREATE_DATE) SWEPT_DATE,
+                                AM.REF SWEEP_ITEM_JOURNAL_ENTRY_NUMBER,
+                                AML.NAME SWEPT_ITEM_NAME,
+                                AML.DEBIT SWEPT_ITEM_AMOUNT,
+                                COALESCE(AIL.NAME,
+
+                                    AVL.NAME) UNSWEPT_ITEMS_NAME,
+                                COALESCE(AIL.NAME,
+
+                                    AVL.NAME) UNSWEPT_ITEMS_AMOUNT
+                            FROM ACCOUNT_MOVE AM
+                            INNER JOIN ACCOUNT_MOVE_LINE AML ON AM.ID = AML.MOVE_ID
+                            LEFT OUTER JOIN ACCOUNT_ANALYTIC_ACCOUNT AAA ON AAA.ID = AML.ANALYTIC_ACCOUNT_ID
+                            LEFT OUTER JOIN ACCOUNT_INVOICE AI ON AI.NUMBER = AM.REF
+                            LEFT OUTER JOIN ACCOUNT_INVOICE_LINE AIL ON AI.ID = AIL.INVOICE_ID
+                            AND AIL.SWEPT = FALSE
+                            LEFT OUTER JOIN ACCOUNT_VOUCHER AV ON AV.NUMBER = AM.REF
+                            LEFT OUTER JOIN ACCOUNT_VOUCHER_LINE AVL ON AV.ID = AVL.VOUCHER_ID
+                            AND AVL.SWEPT = FALSE
+                            WHERE AM.IS_A_SWEEP_JE = TRUE
+                                AND AM.DATE BETWEEN '{0}' AND '{1}'
+                            ORDER BY 1; """.format(
             datetime.strptime(data['start_date'], '%Y-%m-%d').date(),
             datetime.strptime(data['end_date'], '%Y-%m-%d').date())
         # print(q)
